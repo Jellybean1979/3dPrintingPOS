@@ -330,7 +330,7 @@
         }
         
         .qr-code-display {
-            max-width: 200px;
+            max-width: 180px;
             border: 2px solid #667eea;
             border-radius: 8px;
             padding: 10px;
@@ -340,6 +340,21 @@
         .qr-code-display img {
             width: 100%;
             display: block;
+        }
+        
+        .qr-code-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .qr-codes-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         
         .payment-instructions {
@@ -394,7 +409,23 @@
             </div>
             <div class="form-group">
                 <label>CashApp QR Code (upload image)</label>
-                <input type="file" id="qrCode" accept="image/*" onchange="loadQRCode(event)">
+                <input type="file" id="qrCode" accept="image/*" onchange="loadQRCode(event, 'cashapp')">
+            </div>
+            <div class="form-group">
+                <label>PayPal QR Code (upload image) - Optional</label>
+                <input type="file" id="qrCodePayPal" accept="image/*" onchange="loadQRCode(event, 'paypal')">
+            </div>
+            <div class="form-group">
+                <label>Venmo QR Code (upload image) - Optional</label>
+                <input type="file" id="qrCodeVenmo" accept="image/*" onchange="loadQRCode(event, 'venmo')">
+            </div>
+            <div class="form-group">
+                <label>Other Payment QR Code (upload image) - Optional</label>
+                <input type="file" id="qrCodeOther" accept="image/*" onchange="loadQRCode(event, 'other')">
+            </div>
+            <div class="form-group">
+                <label>Other Payment Method Name (if using Other QR Code)</label>
+                <input type="text" id="otherPaymentName" placeholder="e.g., Zelle, Apple Pay, etc.">
             </div>
             <div class="form-group">
                 <label>Client Name</label>
@@ -468,7 +499,12 @@
     <script>
         let filamentCount = 0;
         let bomCount = 0;
-        let qrCodeDataURL = null;
+        let qrCodes = {
+            cashapp: null,
+            paypal: null,
+            venmo: null,
+            other: null
+        };
         
         // Fetch version from GitHub
         fetch('https://api.github.com/repos/jellybean1979/3dPrintingPOS/commits/main')
@@ -484,12 +520,12 @@
                 console.error('Error fetching version:', error);
             });
         
-        function loadQRCode(event) {
+        function loadQRCode(event, type) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    qrCodeDataURL = e.target.result;
+                    qrCodes[type] = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -777,19 +813,42 @@
                             <h3>Payment Information</h3>
                             <div class="payment-instructions">
                                 <p><strong>Accepted Payment Methods:</strong></p>
-                                <p>• CashApp (scan QR code)</p>
+                                ${qrCodes.cashapp ? '<p>• CashApp (scan QR code)</p>' : ''}
+                                ${qrCodes.paypal ? '<p>• PayPal (scan QR code)</p>' : ''}
+                                ${qrCodes.venmo ? '<p>• Venmo (scan QR code)</p>' : ''}
+                                ${qrCodes.other ? `<p>• ${document.getElementById('otherPaymentName').value || 'Other'} (scan QR code)</p>` : ''}
                                 <p>• Cash</p>
                                 <p>• Other arrangements by request</p>
                                 <br>
                                 <p style="font-size: 12px; color: #999;">Thank you for your business!</p>
                             </div>
                         </div>
-                        ${qrCodeDataURL ? `
-                        <div class="qr-code-display">
-                            <img src="${qrCodeDataURL}" alt="CashApp QR Code">
-                            <p style="text-align: center; margin-top: 8px; font-size: 12px; color: #667eea; font-weight: 600;">Scan to Pay</p>
+                        <div class="qr-codes-container">
+                            ${qrCodes.cashapp ? `
+                            <div class="qr-code-display">
+                                <img src="${qrCodes.cashapp}" alt="CashApp QR Code">
+                                <p class="qr-code-label">CashApp</p>
+                            </div>
+                            ` : ''}
+                            ${qrCodes.paypal ? `
+                            <div class="qr-code-display">
+                                <img src="${qrCodes.paypal}" alt="PayPal QR Code">
+                                <p class="qr-code-label">PayPal</p>
+                            </div>
+                            ` : ''}
+                            ${qrCodes.venmo ? `
+                            <div class="qr-code-display">
+                                <img src="${qrCodes.venmo}" alt="Venmo QR Code">
+                                <p class="qr-code-label">Venmo</p>
+                            </div>
+                            ` : ''}
+                            ${qrCodes.other ? `
+                            <div class="qr-code-display">
+                                <img src="${qrCodes.other}" alt="Payment QR Code">
+                                <p class="qr-code-label">${document.getElementById('otherPaymentName').value || 'Other'}</p>
+                            </div>
+                            ` : ''}
                         </div>
-                        ` : ''}
                     </div>
                     
                     <button class="print-btn" onclick="window.print()">🖨️ Print Invoice</button>
