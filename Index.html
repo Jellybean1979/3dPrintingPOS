@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Printing Cost Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filament-entry, .bom-entry {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .entry-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        
+        .remove-btn:hover {
+            background: #e84118;
+        }
+        
+        .add-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .add-btn:hover {
+            background: #5568d3;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .bill {
+            margin-top: 30px;
+            padding: 30px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+        
+        .bill-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .bill-header h2 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .bill-date {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .total-row {
+            font-weight: 600;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
+        
+        .total-row td {
+            border-top: 2px solid #667eea;
+            border-bottom: 2px solid #667eea;
+            padding: 15px 12px;
+        }
+        
+        .print-btn {
+            background: #10ac84;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .print-btn:hover {
+            background: #0e9771;
+        }
+        
+        .invoice {
+            background: white;
+            padding: 40px;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+        
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .invoice-title {
+            font-size: 36px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .invoice-details {
+            text-align: right;
+            color: #666;
+        }
+        
+        .invoice-number {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .invoice-date {
+            font-size: 14px;
+        }
+        
+        .business-client-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .info-block h3 {
+            color: #667eea;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .info-block p {
+            margin: 5px 0;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .project-desc {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        
+        .project-desc h3 {
+            color: #667eea;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .project-desc p {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .invoice-table {
+            margin-bottom: 30px;
+        }
+        
+        .invoice-footer {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        
+        .payment-section h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .qr-code-display {
+            max-width: 200px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .qr-code-display img {
+            width: 100%;
+            display: block;
+        }
+        
+        .payment-instructions {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .section, .calculate-btn, .print-btn {
+                display: none;
+            }
+            
+            .invoice {
+                padding: 20px;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖨️ 3D Printing Cost Calculator</h1>
+        <p class="subtitle">Calculate accurate pricing for your 3D printing projects</p>
+        
+        <div class="section">
+            <h2>🏢 Business Information</h2>
+            <div class="form-group">
+                <label>Business/Your Name</label>
+                <input type="text" id="businessName" placeholder="Your 3D Printing Business">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="businessEmail" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="businessPhone" placeholder="(555) 123-4567">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>CashApp QR Code (upload image)</label>
+                <input type="file" id="qrCode" accept="image/*" onchange="loadQRCode(event)">
+            </div>
+            <div class="form-group">
+                <label>Client Name</label>
+                <input type="text" id="clientName" placeholder="Client Name">
+            </div>
+            <div class="form-group">
+                <label>Project Description</label>
+                <textarea id="projectDesc" rows="2" placeholder="Brief description of the project"></textarea>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📦 Filament Usage</h2>
+            <div id="filamentContainer"></div>
+            <button class="add-btn" onclick="addFilament()">+ Add Filament</button>
+        </div>
+        
+        <div class="section">
+            <h2>🔩 Bill of Materials (BOM)</h2>
+            <div id="bomContainer"></div>
+            <button class="add-btn" onclick="addBOM()">+ Add Material</button>
+        </div>
+        
+        <div class="section">
+            <h2>⏱️ Time & Labor</h2>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Print Time (hours)</label>
+                    <input type="number" id="printTime" step="0.1" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Prep Time (hours)</label>
+                    <input type="number" id="prepTime" step="0.1" value="0" min="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Post-Production Time (hours)</label>
+                <input type="number" id="postProdTime" step="0.1" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Post-Production Rate ($/hour)</label>
+                <input type="number" id="postProdRate" step="0.01" value="25" min="0">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>💰 Additional Costs</h2>
+            <div class="form-group">
+                <label>Miscellaneous/Waste Percentage (%)</label>
+                <input type="number" id="wastePercent" step="0.1" value="10" min="0" max="100">
+            </div>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculateBill()">Generate Itemized Bill</button>
+        
+        <div id="billOutput"></div>
+    </div>
+    
+    <script>
+        let filamentCount = 0;
+        let bomCount = 0;
+        let qrCodeDataURL = null;
+        
+        function loadQRCode(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    qrCodeDataURL = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function addFilament() {
+            filamentCount++;
+            const container = document.getElementById('filamentContainer');
+            const entry = document.createElement('div');
+            entry.className = 'filament-entry';
+            entry.id = `filament-${filamentCount}`;
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <span class="entry-title">Filament ${filamentCount}</span>
+                    <button class="remove-btn" onclick="removeFilament(${filamentCount})">Remove</button>
+                </div>
+                <div class="form-group">
+                    <label>Filament Type/Color</label>
+                    <input type="text" id="filType-${filamentCount}" placeholder="e.g., PLA Black">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Price per Kilogram ($)</label>
+                        <input type="number" id="filPrice-${filamentCount}" step="0.01" value="20" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Grams Used</label>
+                        <input type="number" id="filGrams-${filamentCount}" step="0.1" value="0" min="0">
+                    </div>
+                </div>
+            `;
+            container.appendChild(entry);
+        }
+        
+        function removeFilament(id) {
+            const entry = document.getElementById(`filament-${id}`);
+            entry.remove();
+        }
+        
+        function addBOM() {
+            bomCount++;
+            const container = document.getElementById('bomContainer');
+            const entry = document.createElement('div');
+            entry.className = 'bom-entry';
+            entry.id = `bom-${bomCount}`;
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <span class="entry-title">Material ${bomCount}</span>
+                    <button class="remove-btn" onclick="removeBOM(${bomCount})">Remove</button>
+                </div>
+                <div class="form-group">
+                    <label>Item Description</label>
+                    <input type="text" id="bomDesc-${bomCount}" placeholder="e.g., M3 Screws (10 pack)">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="bomQty-${bomCount}" step="1" value="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Price ($)</label>
+                        <input type="number" id="bomPrice-${bomCount}" step="0.01" value="0" min="0">
+                    </div>
+                </div>
+            `;
+            container.appendChild(entry);
+        }
+        
+        function removeBOM(id) {
+            const entry = document.getElementById(`bom-${id}`);
+            entry.remove();
+        }
+        
+        function calculateBill() {
+            const businessName = document.getElementById('businessName').value || 'Your Business';
+            const businessEmail = document.getElementById('businessEmail').value;
+            const businessPhone = document.getElementById('businessPhone').value;
+            const clientName = document.getElementById('clientName').value || 'Valued Client';
+            const projectDesc = document.getElementById('projectDesc').value;
+            
+            const invoiceNumber = 'INV-' + Date.now().toString().slice(-6);
+            const invoiceDate = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let billHTML = `
+                <div class="invoice">
+                    <div class="invoice-header">
+                        <div class="invoice-title">INVOICE</div>
+                        <div class="invoice-details">
+                            <div class="invoice-number">Invoice #: ${invoiceNumber}</div>
+                            <div class="invoice-date">Date: ${invoiceDate}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="business-client-section">
+                        <div class="info-block">
+                            <h3>From</h3>
+                            <p><strong>${businessName}</strong></p>
+                            ${businessEmail ? `<p>${businessEmail}</p>` : ''}
+                            ${businessPhone ? `<p>${businessPhone}</p>` : ''}
+                        </div>
+                        <div class="info-block">
+                            <h3>Bill To</h3>
+                            <p><strong>${clientName}</strong></p>
+                        </div>
+                    </div>
+                    
+                    ${projectDesc ? `
+                    <div class="project-desc">
+                        <h3>Project Description</h3>
+                        <p>${projectDesc}</p>
+                    </div>
+                    ` : ''}
+                    
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Item Description</th>
+                                <th style="text-align: center;">Quantity</th>
+                                <th style="text-align: right;">Rate</th>
+                                <th style="text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            let total = 0;
+            
+            // Calculate filament costs
+            for (let i = 1; i <= filamentCount; i++) {
+                const entry = document.getElementById(`filament-${i}`);
+                if (!entry) continue;
+                
+                const type = document.getElementById(`filType-${i}`).value || `Filament ${i}`;
+                const pricePerKg = parseFloat(document.getElementById(`filPrice-${i}`).value) || 0;
+                const grams = parseFloat(document.getElementById(`filGrams-${i}`).value) || 0;
+                const pricePerGram = pricePerKg / 1000;
+                const cost = grams * pricePerGram;
+                
+                if (grams > 0) {
+                    billHTML += `
+                        <tr>
+                            <td>${type}</td>
+                            <td style="text-align: center;">${grams}g</td>
+                            <td style="text-align: right;">$${pricePerGram.toFixed(4)}/g</td>
+                            <td style="text-align: right;">$${cost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    total += cost;
+                }
+            }
+            
+            // Calculate BOM costs
+            for (let i = 1; i <= bomCount; i++) {
+                const entry = document.getElementById(`bom-${i}`);
+                if (!entry) continue;
+                
+                const desc = document.getElementById(`bomDesc-${i}`).value || `Material ${i}`;
+                const qty = parseFloat(document.getElementById(`bomQty-${i}`).value) || 0;
+                const price = parseFloat(document.getElementById(`bomPrice-${i}`).value) || 0;
+                const cost = qty * price;
+                
+                if (qty > 0) {
+                    billHTML += `
+                        <tr>
+                            <td>${desc}</td>
+                            <td style="text-align: center;">${qty}</td>
+                            <td style="text-align: right;">$${price.toFixed(2)}</td>
+                            <td style="text-align: right;">$${cost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    total += cost;
+                }
+            }
+            
+            // Add time costs
+            const printTime = parseFloat(document.getElementById('printTime').value) || 0;
+            const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
+            const postProdTime = parseFloat(document.getElementById('postProdTime').value) || 0;
+            const postProdRate = parseFloat(document.getElementById('postProdRate').value) || 0;
+            const postProdCost = postProdTime * postProdRate;
+            
+            if (printTime > 0) {
+                billHTML += `
+                    <tr>
+                        <td>Print Time</td>
+                        <td style="text-align: center;">${printTime} hrs</td>
+                        <td style="text-align: right;">-</td>
+                        <td style="text-align: right;">-</td>
+                    </tr>
+                `;
+            }
+            
+            if (prepTime > 0) {
+                billHTML += `
+                    <tr>
+                        <td>Prep Time</td>
+                        <td style="text-align: center;">${prepTime} hrs</td>
+                        <td style="text-align: right;">-</td>
+                        <td style="text-align: right;">-</td>
+                    </tr>
+                `;
+            }
+            
+            if (postProdTime > 0) {
+                billHTML += `
+                    <tr>
+                        <td>Post-Production Labor</td>
+                        <td style="text-align: center;">${postProdTime} hrs</td>
+                        <td style="text-align: right;">$${postProdRate.toFixed(2)}/hr</td>
+                        <td style="text-align: right;">$${postProdCost.toFixed(2)}</td>
+                    </tr>
+                `;
+                total += postProdCost;
+            }
+            
+            // Subtotal
+            billHTML += `
+                <tr style="border-top: 2px solid #ddd;">
+                    <td colspan="3" style="text-align: right; font-weight: 600; padding-top: 15px;">Subtotal:</td>
+                    <td style="text-align: right; font-weight: 600; padding-top: 15px;">$${total.toFixed(2)}</td>
+                </tr>
+            `;
+            
+            // Add waste percentage
+            const wastePercent = parseFloat(document.getElementById('wastePercent').value) || 0;
+            const wasteCost = total * (wastePercent / 100);
+            
+            if (wastePercent > 0) {
+                billHTML += `
+                    <tr>
+                        <td colspan="3" style="text-align: right;">Miscellaneous/Waste (${wastePercent}%):</td>
+                        <td style="text-align: right;">$${wasteCost.toFixed(2)}</td>
+                    </tr>
+                `;
+                total += wasteCost;
+            }
+            
+            // Add total row
+            billHTML += `
+                        </tbody>
+                    </table>
+                    <table>
+                        <tr class="total-row">
+                            <td colspan="3" style="text-align: right; font-size: 18px;">TOTAL DUE:</td>
+                            <td style="text-align: right; font-size: 18px; color: #667eea;">$${total.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="invoice-footer">
+                        <div class="payment-section">
+                            <h3>Payment Information</h3>
+                            <div class="payment-instructions">
+                                <p><strong>Accepted Payment Methods:</strong></p>
+                                <p>• CashApp (scan QR code)</p>
+                                <p>• Cash</p>
+                                <p>• Other arrangements by request</p>
+                                <br>
+                                <p style="font-size: 12px; color: #999;">Thank you for your business!</p>
+                            </div>
+                        </div>
+                        ${qrCodeDataURL ? `
+                        <div class="qr-code-display">
+                            <img src="${qrCodeDataURL}" alt="CashApp QR Code">
+                            <p style="text-align: center; margin-top: 8px; font-size: 12px; color: #667eea; font-weight: 600;">Scan to Pay</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button class="print-btn" onclick="window.print()">🖨️ Print Invoice</button>
+                </div>
+            `;
+            
+            document.getElementById('billOutput').innerHTML = billHTML;
+        }
+        
+        // Add initial entries
+        addFilament();
+        addBOM();
+    </script>
+</body>
+</html>
