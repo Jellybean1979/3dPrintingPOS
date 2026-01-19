@@ -491,6 +491,45 @@
             </div>
         </div>
         
+        <div class="section">
+            <h2>🎁 Discounts & Promos</h2>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Discount Amount</label>
+                    <input type="number" id="discountAmount" step="0.01" value="0" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Discount Type</label>
+                    <select id="discountType">
+                        <option value="flat">Flat Rate ($)</option>
+                        <option value="percent">Percentage (%)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Discount Description (Optional)</label>
+                <input type="text" id="discountDesc" placeholder="e.g., Repeat Customer, Bulk Order">
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Promo Code Amount</label>
+                    <input type="number" id="promoAmount" step="0.01" value="0" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Promo Type</label>
+                    <select id="promoType">
+                        <option value="flat">Flat Rate ($)</option>
+                        <option value="percent">Percentage (%)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Promo Code Name (Optional)</label>
+                <input type="text" id="promoCode" placeholder="e.g., SUMMER2024, FIRST10">
+            </div>
+        </div>
+        
         <button class="calculate-btn" onclick="calculateBill()">Generate Itemized Bill</button>
         
         <div id="billOutput"></div>
@@ -796,6 +835,62 @@
                 `;
                 total += wasteCost;
             }
+            
+            // Calculate subtotal before discounts
+            const subtotalBeforeDiscounts = total;
+            
+            // Add discount
+            const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const discountType = document.getElementById('discountType').value;
+            const discountDesc = document.getElementById('discountDesc').value;
+            let discountValue = 0;
+            
+            if (discountAmount > 0) {
+                if (discountType === 'percent') {
+                    discountValue = subtotalBeforeDiscounts * (discountAmount / 100);
+                } else {
+                    discountValue = discountAmount;
+                }
+                
+                const discountLabel = discountDesc ? discountDesc : 'Discount';
+                const discountDisplay = discountType === 'percent' ? `${discountAmount}%` : `$${discountAmount.toFixed(2)}`;
+                
+                billHTML += `
+                    <tr style="color: #10ac84;">
+                        <td colspan="3" style="text-align: right;">${discountLabel} (${discountDisplay}):</td>
+                        <td style="text-align: right;">-$${discountValue.toFixed(2)}</td>
+                    </tr>
+                `;
+                total -= discountValue;
+            }
+            
+            // Add promo code
+            const promoAmount = parseFloat(document.getElementById('promoAmount').value) || 0;
+            const promoType = document.getElementById('promoType').value;
+            const promoCode = document.getElementById('promoCode').value;
+            let promoValue = 0;
+            
+            if (promoAmount > 0) {
+                if (promoType === 'percent') {
+                    promoValue = subtotalBeforeDiscounts * (promoAmount / 100);
+                } else {
+                    promoValue = promoAmount;
+                }
+                
+                const promoLabel = promoCode ? `Promo Code: ${promoCode}` : 'Promo Code';
+                const promoDisplay = promoType === 'percent' ? `${promoAmount}%` : `$${promoAmount.toFixed(2)}`;
+                
+                billHTML += `
+                    <tr style="color: #10ac84;">
+                        <td colspan="3" style="text-align: right;">${promoLabel} (${promoDisplay}):</td>
+                        <td style="text-align: right;">-$${promoValue.toFixed(2)}</td>
+                    </tr>
+                `;
+                total -= promoValue;
+            }
+            
+            // Ensure total doesn't go negative
+            if (total < 0) total = 0;
             
             // Add total row
             billHTML += `
