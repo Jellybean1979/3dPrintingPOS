@@ -372,6 +372,9 @@
     <div class="container">
         <h1>🖨️ 3D Printing Cost Calculator</h1>
         <p class="subtitle">Calculate accurate pricing for your 3D printing projects</p>
+        <strong id="versionTag" style="font-size: 0.8em; display: block; color: #666; margin-bottom: 20px;">
+            by Gary Langley — loading version…
+        </strong>
         
         <div class="section">
             <h2>🏢 Business Information</h2>
@@ -466,6 +469,20 @@
         let filamentCount = 0;
         let bomCount = 0;
         let qrCodeDataURL = null;
+        
+        // Fetch version from GitHub
+        fetch('https://api.github.com/repos/jellybean1979/3dPrintingPOS/commits/main')
+            .then(response => response.json())
+            .then(data => {
+                const shortSha = data.sha.substring(0, 7);
+                document.getElementById('versionTag').textContent = 
+                    `by Gary Langley — version ${shortSha}`;
+            })
+            .catch(error => {
+                document.getElementById('versionTag').textContent = 
+                    'by Gary Langley — version unavailable';
+                console.error('Error fetching version:', error);
+            });
         
         function loadQRCode(event) {
             const file = event.target.files[0];
