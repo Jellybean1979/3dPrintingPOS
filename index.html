@@ -423,17 +423,29 @@
                     <input type="number" id="printTime" step="0.1" value="0" min="0">
                 </div>
                 <div class="form-group">
+                    <label>Print Time Rate ($/hour) - Optional</label>
+                    <input type="number" id="printTimeRate" step="0.01" value="0" min="0" placeholder="Leave 0 for no charge">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
                     <label>Prep Time (hours)</label>
                     <input type="number" id="prepTime" step="0.1" value="0" min="0">
                 </div>
+                <div class="form-group">
+                    <label>Prep Time Rate ($/hour) - Optional</label>
+                    <input type="number" id="prepTimeRate" step="0.01" value="0" min="0" placeholder="Leave 0 for no charge">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Post-Production Time (hours)</label>
-                <input type="number" id="postProdTime" step="0.1" value="0" min="0">
-            </div>
-            <div class="form-group">
-                <label>Post-Production Rate ($/hour)</label>
-                <input type="number" id="postProdRate" step="0.01" value="25" min="0">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Post-Production Time (hours)</label>
+                    <input type="number" id="postProdTime" step="0.1" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Post-Production Rate ($/hour)</label>
+                    <input type="number" id="postProdRate" step="0.01" value="25" min="0">
+                </div>
             </div>
         </div>
         
@@ -641,31 +653,61 @@
             
             // Add time costs
             const printTime = parseFloat(document.getElementById('printTime').value) || 0;
+            const printTimeRate = parseFloat(document.getElementById('printTimeRate').value) || 0;
+            const printTimeCost = printTime * printTimeRate;
+            
             const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
+            const prepTimeRate = parseFloat(document.getElementById('prepTimeRate').value) || 0;
+            const prepTimeCost = prepTime * prepTimeRate;
+            
             const postProdTime = parseFloat(document.getElementById('postProdTime').value) || 0;
             const postProdRate = parseFloat(document.getElementById('postProdRate').value) || 0;
             const postProdCost = postProdTime * postProdRate;
             
             if (printTime > 0) {
-                billHTML += `
-                    <tr>
-                        <td>Print Time</td>
-                        <td style="text-align: center;">${printTime} hrs</td>
-                        <td style="text-align: right;">-</td>
-                        <td style="text-align: right;">-</td>
-                    </tr>
-                `;
+                if (printTimeRate > 0) {
+                    billHTML += `
+                        <tr>
+                            <td>Print Time</td>
+                            <td style="text-align: center;">${printTime} hrs</td>
+                            <td style="text-align: right;">$${printTimeRate.toFixed(2)}/hr</td>
+                            <td style="text-align: right;">$${printTimeCost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    total += printTimeCost;
+                } else {
+                    billHTML += `
+                        <tr>
+                            <td>Print Time</td>
+                            <td style="text-align: center;">${printTime} hrs</td>
+                            <td style="text-align: right;">-</td>
+                            <td style="text-align: right;">-</td>
+                        </tr>
+                    `;
+                }
             }
             
             if (prepTime > 0) {
-                billHTML += `
-                    <tr>
-                        <td>Prep Time</td>
-                        <td style="text-align: center;">${prepTime} hrs</td>
-                        <td style="text-align: right;">-</td>
-                        <td style="text-align: right;">-</td>
-                    </tr>
-                `;
+                if (prepTimeRate > 0) {
+                    billHTML += `
+                        <tr>
+                            <td>Prep Time</td>
+                            <td style="text-align: center;">${prepTime} hrs</td>
+                            <td style="text-align: right;">$${prepTimeRate.toFixed(2)}/hr</td>
+                            <td style="text-align: right;">$${prepTimeCost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    total += prepTimeCost;
+                } else {
+                    billHTML += `
+                        <tr>
+                            <td>Prep Time</td>
+                            <td style="text-align: center;">${prepTime} hrs</td>
+                            <td style="text-align: right;">-</td>
+                            <td style="text-align: right;">-</td>
+                        </tr>
+                    `;
+                }
             }
             
             if (postProdTime > 0) {
